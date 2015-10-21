@@ -1,23 +1,28 @@
-**Bugs**
+# Bugs
 
 2 trous concentriques -> a corriger
 
 tours à vide sur square_pocket
 
-**Code**
-
-Licence en entete des fichiers
-
-underscores devant fonctions non publiques
 
 
-**Nouvelles fonctionnalités**
+
+# Code
+
+More tests
+
+
+
+
+# New functionalities
 
 Stratégies d'usinage (finition, semi-finition, finition)
 
-
-Readme avec schemas
-
 docopt ou similaire
 
-More tests
+
+
+
+# Other
+
+Readme avec schemas

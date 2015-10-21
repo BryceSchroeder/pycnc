@@ -16,3 +16,8 @@ underscores devant fonctions non publiques
 Stratégies d'usinage (finition, semi-finition, finition)
 
 
+Readme avec schemas
+
+docopt ou similaire
+
+More tests

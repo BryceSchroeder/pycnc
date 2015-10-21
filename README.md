@@ -1,4 +1,9 @@
-## pycnc
+# pycnc
+
+[![Build Status](https://travis-ci.org/floatingpointstack/pycnc.svg)](https://travis-ci.org/floatingpointstack/pycnc)
+[![Coverage Status](https://coveralls.io/repos/floatingpointstack/pycnc/badge.svg?branch=master&service=github)](https://coveralls.io/github/floatingpointstack/pycnc?branch=master)
+[![GPL v2](http://img.shields.io/badge/license-GPL v2-blue.svg)](https://www.gnu.org/copyleft/gpl.html)
+
 A set of 2.5D CNC Python routines to generate GCode for simple geometries.
 
 ## Install

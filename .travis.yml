@@ -1,0 +1,17 @@
+language: python
+sudo: false
+python:
+  - "2.6"
+  - "2.7"
+  - "3.4"
+
+install:
+  - pip install python-coveralls
+  - pip install coverage
+  - pip install nose
+
+script:
+  - nosetests --with-coverage
+
+after_success:
+  coveralls

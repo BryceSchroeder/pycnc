@@ -8,7 +8,7 @@
 [![Python 2.7 3.*](http://img.shields.io/badge/Python-2.7 3.*-ff3366.svg)](https://www.python.org/downloads/)
 [![PEP8](http://img.shields.io/badge/PEP8-OK-00CC00.svg)](https://www.python.org/dev/peps/pep-0008/)
 
-A set of 2.5D CNC Python routines to generate GCode for simple geometries.
+A set of 2.5D CNC Python routines to generate GCode for simple geometries machining on a 3 axis mill or router.
 
 
 ##Getting started
@@ -23,7 +23,13 @@ A set of 2.5D CNC Python routines to generate GCode for simple geometries.
 
 Please see the examples folder for possible uses.
 
-For complex 2D and 3D shapes, Pycam is a very good alternative.
+The generated GCode can be visualized and simulated in an open source GCode viewer like [CAMotics](http://camotics.org/download.html)
+
+![example_plate.py generated gcode simulation](images/example_plate_simulation.png)
+
+## Known limitations
+
+pycnc is limited to simple 2.5D shapes. For complex 2D and 3D shapes, [Pycam](http://pycam.sourceforge.net/) is a good free alternative.
 
 ## Available GCode generators
 

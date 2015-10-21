@@ -1,8 +1,8 @@
 # Bugs
 
-2 trous concentriques -> a corriger
+two_concentric_holes(): check and correct
 
-tours à vide sur square_pocket
+square_pocket(): tours à vide
 
 
 
@@ -17,8 +17,6 @@ More tests
 # New functionalities
 
 Stratégies d'usinage (finition, semi-finition, finition)
-
-docopt ou similaire
 
 
 

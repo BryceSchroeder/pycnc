@@ -1,7 +1,8 @@
 # ignore PyCharm specific files
 /.idea
 
-
+/build
+/dist
 
 #################
 ## Eclipse

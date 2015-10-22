@@ -21,7 +21,7 @@ A set of 2.5D CNC Python routines to generate GCode for simple geometries machin
 
 ### Use
 
-Please see the examples folder for possible uses.
+Please see the examples folder for possible uses. The intended use of pycnc is from another Python script, similar to example_plate.py.
 
 The generated GCode can be visualized and simulated in an open source GCode viewer like [CAMotics](http://camotics.org/download.html)
 

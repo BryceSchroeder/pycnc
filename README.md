@@ -15,9 +15,11 @@ A set of 2.5D CNC Python routines to generate GCode for simple geometries machin
 
 ### Install
 
-1. unzip / untar
-2. cd into new directory
+1. unzip dist/pycnc-0.1.zip (windows) or dist/untar pycnc-0.1.tar.gz (linux)
+2. cd into new directory (where setup.py is located)
 3. python setup.py install
+
+Copying gcode_generator.py to the same folder as your client scripts is also okay (and simpler) ....
 
 ### Use
 

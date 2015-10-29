@@ -4,8 +4,9 @@ from __future__ import division
 
 import math
 
-import exceptions
 import gcodes
+import exceptions
+
 
 GCODE_EXTENSION = '.ngc'
 

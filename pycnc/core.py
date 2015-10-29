@@ -3,7 +3,9 @@
 from __future__ import division
 
 import math
-import os
+
+import exceptions
+import gcodes
 
 GCODE_EXTENSION = '.ngc'
 
@@ -25,7 +27,7 @@ def oval(x_center, y_center, x_width, y_height, tool_diameter, feed_rate, z_feed
     """
     point_center = Point(x_center, y_center)
     gcode = list()
-    gcode.append(_g0_gcode(x=x_center, y=y_center, z=safety_z))
+    gcode.append(gcodes.g0_gcode(x=x_center, y=y_center, z=safety_z))
 
     for h in _generate_heights(from_z, to_z, step_z):
         for d in _generate_excentric(0.00, y_height/2.0, tool_diameter):
@@ -37,19 +39,19 @@ def oval(x_center, y_center, x_width, y_height, tool_diameter, feed_rate, z_feed
             point_w_arc_center = (Point(-(x_width - y_height)/2.0, 0.0) + point_center).rotate(point_center, angle)
             point_nw = (Point(-(x_width - y_height)/2.0, d) + point_center).rotate(point_center, angle)
             
-            gcode.append(_g1_gcode(z=h, feedrate=z_feed_rate))
-            gcode.append(_g1_gcode(x=point_n.x, y=point_n.y, feedrate=feed_rate))
-            gcode.append(_g1_gcode(x=point_ne.x, y=point_ne.y, feedrate=feed_rate))
-            gcode.append(_g2_gcode(x_end_point=point_se.x, y_end_point=point_se.y, spiral_end_altitude=h,
-                                   x_center_offset=(point_e_arc_center - point_ne).x,
-                                   y_center_offset=(point_e_arc_center - point_ne).y, feedrate=feed_rate))
-            gcode.append(_g1_gcode(x=point_sw.x, y=point_sw.y, feedrate=feed_rate))
-            gcode.append(_g2_gcode(x_end_point=point_nw.x, y_end_point=point_nw.y, spiral_end_altitude=h,
-                                   x_center_offset=(point_w_arc_center - point_sw).x,
-                                   y_center_offset=(point_w_arc_center - point_sw).y, feedrate=feed_rate))
-            gcode.append(_g1_gcode(x=point_n.x, y=point_n.y, feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(z=h, feedrate=z_feed_rate))
+            gcode.append(gcodes.g1_gcode(x=point_n.x, y=point_n.y, feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(x=point_ne.x, y=point_ne.y, feedrate=feed_rate))
+            gcode.append(gcodes.g2_gcode(x_end_point=point_se.x, y_end_point=point_se.y, spiral_end_altitude=h,
+                                         x_center_offset=(point_e_arc_center - point_ne).x,
+                                         y_center_offset=(point_e_arc_center - point_ne).y, feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(x=point_sw.x, y=point_sw.y, feedrate=feed_rate))
+            gcode.append(gcodes.g2_gcode(x_end_point=point_nw.x, y_end_point=point_nw.y, spiral_end_altitude=h,
+                                         x_center_offset=(point_w_arc_center - point_sw).x,
+                                         y_center_offset=(point_w_arc_center - point_sw).y, feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(x=point_n.x, y=point_n.y, feedrate=feed_rate))
 
-    gcode.append(_g1_gcode(z=safety_z, feedrate=feed_rate))
+    gcode.append(gcodes.g1_gcode(z=safety_z, feedrate=feed_rate))
     return ''.join(gcode)
 
 
@@ -57,13 +59,13 @@ def path(path_to_follow, feed_rate, z_feed_rate, from_z, to_z, step_z, safety_z)
     r"""Generate Gcode to follow a path (an array of 2D (X,Y) arrays)"""
     
     gcode = list()
-    gcode.append(_g0_gcode(x=0, y=0, z=safety_z))
-    gcode.append(_g0_gcode(x=path_to_follow[0][0], y=path_to_follow[0][1]))
+    gcode.append(gcodes.g0_gcode(x=0, y=0, z=safety_z))
+    gcode.append(gcodes.g0_gcode(x=path_to_follow[0][0], y=path_to_follow[0][1]))
     for h in _generate_heights(from_z, to_z, step_z):
-        gcode.append(_g1_gcode(z=h, feedrate=z_feed_rate))
+        gcode.append(gcodes.g1_gcode(z=h, feedrate=z_feed_rate))
         for point in path_to_follow:
-            gcode.append(_g1_gcode(x=point[0], y=point[1], feedrate=feed_rate))
-    gcode.append(_g1_gcode(z=safety_z, feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(x=point[0], y=point[1], feedrate=feed_rate))
+    gcode.append(gcodes.g1_gcode(z=safety_z, feedrate=feed_rate))
     return ''.join(gcode)
 
 
@@ -87,17 +89,17 @@ def rectangle(x_dimension, y_dimension, x_mini, y_mini, tool_diameter, feed_rate
     """
     
     gcode = list()
-    gcode.append(_g0_gcode(x=0, y=0, z=safety_z))
-    gcode.append(_g0_gcode(x=x_mini - tool_diameter / 2, y=y_mini - tool_diameter / 2))
+    gcode.append(gcodes.g0_gcode(x=0, y=0, z=safety_z))
+    gcode.append(gcodes.g0_gcode(x=x_mini - tool_diameter / 2, y=y_mini - tool_diameter / 2))
 
     for h in _generate_heights(from_z, to_z, step_z):
-        gcode.append(_g1_gcode(z=h, feedrate=z_feed_rate))
-        gcode.append(_g1_gcode(x=x_mini + x_dimension + tool_diameter / 2, feedrate=feed_rate))
-        gcode.append(_g1_gcode(y=y_mini + y_dimension + tool_diameter / 2, feedrate=feed_rate))
-        gcode.append(_g1_gcode(x=x_mini-tool_diameter / 2, feedrate=feed_rate))
-        gcode.append(_g1_gcode(y=y_mini-tool_diameter / 2, feedrate=feed_rate))
+        gcode.append(gcodes.g1_gcode(z=h, feedrate=z_feed_rate))
+        gcode.append(gcodes.g1_gcode(x=x_mini + x_dimension + tool_diameter / 2, feedrate=feed_rate))
+        gcode.append(gcodes.g1_gcode(y=y_mini + y_dimension + tool_diameter / 2, feedrate=feed_rate))
+        gcode.append(gcodes.g1_gcode(x=x_mini-tool_diameter / 2, feedrate=feed_rate))
+        gcode.append(gcodes.g1_gcode(y=y_mini-tool_diameter / 2, feedrate=feed_rate))
 
-    gcode.append(_g1_gcode(z=safety_z, feedrate=feed_rate))
+    gcode.append(gcodes.g1_gcode(z=safety_z, feedrate=feed_rate))
     
     return ''.join(gcode)
 
@@ -122,40 +124,40 @@ def rectangle_rounded_corners(x_center, y_center, x_dimension, y_dimension, corn
     """
     
     gcode = list()
-    gcode.append(_g0_gcode(x=0, y=0, z=safety_z))
+    gcode.append(gcodes.g0_gcode(x=0, y=0, z=safety_z))
     # go to start point (LOWER LEFT CORNER)
-    gcode.append(_g0_gcode(x=x_center - x_dimension / 2 + corner_radius,
-                           y=y_center - y_dimension / 2 - tool_diameter / 2))
+    gcode.append(gcodes.g0_gcode(x=x_center - x_dimension / 2 + corner_radius,
+                                 y=y_center - y_dimension / 2 - tool_diameter / 2))
 
     for h in _generate_heights(from_z, to_z, step_z):
-        gcode.append(_g1_gcode(z=h, feedrate=z_feed_rate))
+        gcode.append(gcodes.g1_gcode(z=h, feedrate=z_feed_rate))
         # LOWER EDGE
-        gcode.append(_g1_gcode(x=x_center + x_dimension / 2 - corner_radius, feedrate=feed_rate))
+        gcode.append(gcodes.g1_gcode(x=x_center + x_dimension / 2 - corner_radius, feedrate=feed_rate))
         # BOTTOM RIGHT CORNER
-        gcode.append(_g3_gcode(x_end_point=x_center + x_dimension / 2 + tool_diameter / 2,
-                               y_end_point=y_center - y_dimension / 2 + corner_radius,
-                               x_center_offset=0.0, y_center_offset=corner_radius + tool_diameter / 2,
-                               spiral_end_altitude=h, feedrate=feed_rate))
+        gcode.append(gcodes.g3_gcode(x_end_point=x_center + x_dimension / 2 + tool_diameter / 2,
+                                     y_end_point=y_center - y_dimension / 2 + corner_radius,
+                                     x_center_offset=0.0, y_center_offset=corner_radius + tool_diameter / 2,
+                                     spiral_end_altitude=h, feedrate=feed_rate))
         # RIGHT EDGE
-        gcode.append(_g1_gcode(y=y_center + y_dimension / 2 - corner_radius, feedrate=feed_rate))
+        gcode.append(gcodes.g1_gcode(y=y_center + y_dimension / 2 - corner_radius, feedrate=feed_rate))
         # UPPER RIGHT CORNER
-        gcode.append(_g3_gcode(x_end_point=x_center + x_dimension / 2 - corner_radius,
-                               y_end_point=y_center + y_dimension / 2 + tool_diameter / 2,
-                               x_center_offset=-corner_radius - tool_diameter / 2,
-                               y_center_offset=0.0, spiral_end_altitude=h, feedrate=feed_rate))
+        gcode.append(gcodes.g3_gcode(x_end_point=x_center + x_dimension / 2 - corner_radius,
+                                     y_end_point=y_center + y_dimension / 2 + tool_diameter / 2,
+                                     x_center_offset=-corner_radius - tool_diameter / 2,
+                                     y_center_offset=0.0, spiral_end_altitude=h, feedrate=feed_rate))
         # TOP EDGE
-        gcode.append(_g1_gcode(x=x_center - x_dimension / 2 + corner_radius, feedrate=feed_rate))
-        gcode.append(_g3_gcode(x_end_point=x_center - x_dimension / 2 - tool_diameter / 2,
-                               y_end_point=y_center + y_dimension / 2 - corner_radius,
-                               x_center_offset=0.0, y_center_offset=-corner_radius - tool_diameter / 2,
-                               spiral_end_altitude=h, feedrate=feed_rate))
-        gcode.append(_g1_gcode(y=y_center - y_dimension / 2 + corner_radius, feedrate=feed_rate))
-        gcode.append(_g3_gcode(x_end_point=x_center - x_dimension / 2 + corner_radius,
-                               y_end_point=y_center - y_dimension / 2 - tool_diameter / 2,
-                               x_center_offset=corner_radius + tool_diameter / 2, y_center_offset=0.0,
-                               spiral_end_altitude=h, feedrate=feed_rate))
+        gcode.append(gcodes.g1_gcode(x=x_center - x_dimension / 2 + corner_radius, feedrate=feed_rate))
+        gcode.append(gcodes.g3_gcode(x_end_point=x_center - x_dimension / 2 - tool_diameter / 2,
+                                     y_end_point=y_center + y_dimension / 2 - corner_radius,
+                                     x_center_offset=0.0, y_center_offset=-corner_radius - tool_diameter / 2,
+                                     spiral_end_altitude=h, feedrate=feed_rate))
+        gcode.append(gcodes.g1_gcode(y=y_center - y_dimension / 2 + corner_radius, feedrate=feed_rate))
+        gcode.append(gcodes.g3_gcode(x_end_point=x_center - x_dimension / 2 + corner_radius,
+                                     y_end_point=y_center - y_dimension / 2 - tool_diameter / 2,
+                                     x_center_offset=corner_radius + tool_diameter / 2, y_center_offset=0.0,
+                                     spiral_end_altitude=h, feedrate=feed_rate))
 
-    gcode.append(_g1_gcode(z=safety_z, feedrate=feed_rate))
+    gcode.append(gcodes.g1_gcode(z=safety_z, feedrate=feed_rate))
     
     return ''.join(gcode)
 
@@ -185,33 +187,33 @@ def thin(x_dimension, y_dimension, x_mini, y_mini, tool_diameter, feed_rate, z_f
     x_center = x_mini + x_dimension / 2
     y_center = y_mini+y_dimension / 2
     gcode = list()
-    gcode.append(_g0_gcode(x=0, y=0, z=safety_z))
-    gcode.append(_g0_gcode(x=x_center, y=y_center))
+    gcode.append(gcodes.g0_gcode(x=0, y=0, z=safety_z))
+    gcode.append(gcodes.g0_gcode(x=x_center, y=y_center))
 
     for h in _generate_heights(from_z, to_z, step_z):
-        gcode.append(_g1_gcode(x=x_center, y=y_center, feedrate=feed_rate))
-        gcode.append(_g1_gcode(z=h, feedrate=z_feed_rate))
+        gcode.append(gcodes.g1_gcode(x=x_center, y=y_center, feedrate=feed_rate))
+        gcode.append(gcodes.g1_gcode(z=h, feedrate=z_feed_rate))
         
         nb_turns = 0.00
         # correction bug 25 SEP 2012 - parcours du perimètre exterieur sans prendre de matière
         # division par 2 de y_dimension dans l expression de la boucle while
         # while nb_turns/2*tool_diameter < x_dimension/2 or nb_turns/2*tool_diameter < y_dimension:
-        while nb_turns/2*tool_diameter < x_dimension/2 or nb_turns/2*tool_diameter < y_dimension/2:
-            gcode.append(_g1_gcode(y=min(y_center + (nb_turns / 2 + 0.5) * tool_diameter,
-                                         y_mini + y_dimension - tool_diameter / 2), feedrate=feed_rate))
-            gcode.append(_g1_gcode(x=min(x_center + (nb_turns / 2 + 0.5) * tool_diameter,
-                                         x_mini + x_dimension - tool_diameter / 2), feedrate=feed_rate))
-            gcode.append(_g1_gcode(y=max(y_center - (nb_turns / 2 + 0.5) * tool_diameter,
-                                         y_mini + tool_diameter / 2), feedrate=feed_rate))
-            gcode.append(_g1_gcode(x=max(x_center - (nb_turns / 2 + 0.5) * tool_diameter,
-                                         x_mini + tool_diameter / 2), feedrate=feed_rate))
-            gcode.append(_g1_gcode(y=min(y_center + (nb_turns / 2 + 0.5) * tool_diameter,
-                                         y_mini + y_dimension - tool_diameter / 2), feedrate=feed_rate))
-            gcode.append(_g1_gcode(x=x_center, feedrate=feed_rate))
+        while nb_turns / 2 * tool_diameter < x_dimension/2 or nb_turns / 2* tool_diameter < y_dimension / 2:
+            gcode.append(gcodes.g1_gcode(y=min(y_center + (nb_turns / 2 + 0.5) * tool_diameter,
+                                               y_mini + y_dimension - tool_diameter / 2), feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(x=min(x_center + (nb_turns / 2 + 0.5) * tool_diameter,
+                                               x_mini + x_dimension - tool_diameter / 2), feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(y=max(y_center - (nb_turns / 2 + 0.5) * tool_diameter,
+                                               y_mini + tool_diameter / 2), feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(x=max(x_center - (nb_turns / 2 + 0.5) * tool_diameter,
+                                               x_mini + tool_diameter / 2), feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(y=min(y_center + (nb_turns / 2 + 0.5) * tool_diameter,
+                                               y_mini + y_dimension - tool_diameter / 2), feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(x=x_center, feedrate=feed_rate))
             
             nb_turns += 1.00
 
-    gcode.append(_g1_gcode(z=safety_z, feedrate=feed_rate))
+    gcode.append(gcodes.g1_gcode(z=safety_z, feedrate=feed_rate))
     return ''.join(gcode)
 
 
@@ -225,16 +227,16 @@ def hole(x_center, y_center, hole_diameter, tool_diameter, feed_rate, from_z, to
     
     """
     if hole_diameter < tool_diameter:
-        raise WrongParameterError('Cannot make a hole smaller than the tool')
+        raise exceptions.WrongParameterError('Cannot make a hole smaller than the tool')
     gcode = list()
-    gcode.append(_g0_gcode(z=safety_z))
-    gcode.append(_g0_gcode(x=x_center - hole_diameter / 2 + tool_diameter / 2, y=y_center))
+    gcode.append(gcodes.g0_gcode(z=safety_z))
+    gcode.append(gcodes.g0_gcode(x=x_center - hole_diameter / 2 + tool_diameter / 2, y=y_center))
 
     for h in _generate_heights(from_z, to_z, step_z):
-        gcode.append(_g2_gcode(x_center_offset=hole_diameter / 2 - tool_diameter / 2, y_center_offset=0,
-                               spiral_end_altitude=h, feedrate=feed_rate))
+        gcode.append(gcodes.g2_gcode(x_center_offset=hole_diameter / 2 - tool_diameter / 2, y_center_offset=0,
+                                     spiral_end_altitude=h, feedrate=feed_rate))
         
-    gcode.append(_g1_gcode(z=safety_z, feedrate=feed_rate))
+    gcode.append(gcodes.g1_gcode(z=safety_z, feedrate=feed_rate))
     
     return ''.join(gcode)
 
@@ -247,19 +249,20 @@ def full_hole(x_center, y_center, hole_diameter, tool_diameter, feed_rate, z_fee
     
     """
     if hole_diameter < tool_diameter:
-        raise WrongParameterError('Cannot make a hole smaller than the tool')
+        raise exceptions.WrongParameterError('Cannot make a hole smaller than the tool')
     gcode = list()
-    gcode.append(_g0_gcode(z=safety_z))
+    gcode.append(gcodes.g0_gcode(z=safety_z))
     # gcode.append(_g0_gcode(x=x_center-tool_diameter/2,y=y_center))
-    gcode.append(_g0_gcode(x=x_center - tool_diameter / 2, y=y_center))
+    gcode.append(gcodes.g0_gcode(x=x_center - tool_diameter / 2, y=y_center))
 
     for h in _generate_heights(from_z, to_z, step_z):
-        gcode.append(_g1_gcode(z=h, feedrate=z_feed_rate))
+        gcode.append(gcodes.g1_gcode(z=h, feedrate=z_feed_rate))
         for e in _generate_excentric(start=center_diameter/2.0, end=hole_diameter / 2, tool_diameter=tool_diameter):
-            gcode.append(_g1_gcode(x=x_center-e, y=y_center, feedrate=feed_rate))
-            gcode.append(_g2_gcode(x_center_offset=e, y_center_offset=0, spiral_end_altitude=h, feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(x=x_center-e, y=y_center, feedrate=feed_rate))
+            gcode.append(gcodes.g2_gcode(x_center_offset=e, y_center_offset=0, spiral_end_altitude=h,
+                                         feedrate=feed_rate))
         
-    gcode.append(_g1_gcode(z=safety_z, feedrate=feed_rate))
+    gcode.append(gcodes.g1_gcode(z=safety_z, feedrate=feed_rate))
     return ''.join(gcode)
 
 
@@ -268,11 +271,11 @@ def square_pocket(x_center, y_center, x_dimension, y_dimension, tool_diameter, f
     r"""Generate Gcode to dig a square and remove the middle material"""
     
     if x_dimension < tool_diameter or y_dimension < tool_diameter:
-        raise WrongParameterError('Cannot make a square pocket smaller than the tool')
+        raise exceptions.WrongParameterError('Cannot make a square pocket smaller than the tool')
 
     gcode = list()
-    gcode.append(_g0_gcode(x=0, y=0, z=safety_z))
-    gcode.append(_g0_gcode(x=x_center, y=y_center))
+    gcode.append(gcodes.g0_gcode(x=0, y=0, z=safety_z))
+    gcode.append(gcodes.g0_gcode(x=x_center, y=y_center))
     
     x_absolute_maximum = x_center + x_dimension / 2
     x_absolute_minimum = x_center - x_dimension / 2
@@ -307,8 +310,8 @@ def square_pocket(x_center, y_center, x_dimension, y_dimension, tool_diameter, f
     path_to_follow.append(point1)
 
     for h in _generate_heights(from_z, to_z, step_z):
-        gcode.append(_g1_gcode(x=x_center, y=y_center, feedrate=feed_rate))
-        gcode.append(_g1_gcode(z=h, feedrate=z_feed_rate))
+        gcode.append(gcodes.g1_gcode(x=x_center, y=y_center, feedrate=feed_rate))
+        gcode.append(gcodes.g1_gcode(z=h, feedrate=z_feed_rate))
         
         nb_turns = 0.00
         
@@ -322,20 +325,20 @@ def square_pocket(x_center, y_center, x_dimension, y_dimension, tool_diameter, f
             x_mini = max(x_center - (nb_turns / 2 + 0.5) * tool_diameter,
                          x_center - x_dimension / 2 + tool_diameter / 2)
 
-            gcode.append(_g1_gcode(y=y_maxi, feedrate=feed_rate))
-            gcode.append(_g1_gcode(x=x_maxi, feedrate=feed_rate))
-            gcode.append(_g1_gcode(y=y_mini, feedrate=feed_rate))
-            gcode.append(_g1_gcode(x=x_mini, feedrate=feed_rate))
-            gcode.append(_g1_gcode(y=y_maxi, feedrate=feed_rate))
-            gcode.append(_g1_gcode(x=x_center, feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(y=y_maxi, feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(x=x_maxi, feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(y=y_mini, feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(x=x_mini, feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(y=y_maxi, feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(x=x_center, feedrate=feed_rate))
             
             nb_turns += 1.00
             
         # Cut the corners
         for point in path_to_follow:
-            gcode.append(_g1_gcode(x=point[0], y=point[1], feedrate=feed_rate))
+            gcode.append(gcodes.g1_gcode(x=point[0], y=point[1], feedrate=feed_rate))
 
-    gcode.append(_g1_gcode(z=safety_z, feedrate=feed_rate))
+    gcode.append(gcodes.g1_gcode(z=safety_z, feedrate=feed_rate))
     return ''.join(gcode)
 
 
@@ -344,14 +347,14 @@ def square_pocket(x_center, y_center, x_dimension, y_dimension, tool_diameter, f
 def cylinder(x_center, y_center, cylinder_diameter, tool_diameter, feed_rate, from_z, to_z, step_z, safety_z):
     r"""Generate Gcode to cut a cylinder"""
     gcode = list()
-    gcode.append(_g0_gcode(z=safety_z))
-    gcode.append(_g0_gcode(x=x_center - (cylinder_diameter + tool_diameter) / 2 + tool_diameter / 2, y=y_center))
+    gcode.append(gcodes.g0_gcode(z=safety_z))
+    gcode.append(gcodes.g0_gcode(x=x_center - (cylinder_diameter + tool_diameter) / 2 + tool_diameter / 2, y=y_center))
 
     for h in _generate_heights(from_z, to_z, step_z):
-        gcode.append(_g3_gcode(x_center_offset=(cylinder_diameter + tool_diameter) / 2 - tool_diameter / 2,
-                               y_center_offset=0, spiral_end_altitude=h, feedrate=feed_rate))
+        gcode.append(gcodes.g3_gcode(x_center_offset=(cylinder_diameter + tool_diameter) / 2 - tool_diameter / 2,
+                                     y_center_offset=0, spiral_end_altitude=h, feedrate=feed_rate))
 
-    gcode.append(_g1_gcode(z=safety_z, feedrate=feed_rate))
+    gcode.append(gcodes.g1_gcode(z=safety_z, feedrate=feed_rate))
     return ''.join(gcode)
 
 
@@ -368,7 +371,7 @@ def two_concentric_holes(x_center, y_center, hole_diameter_1, hole_diameter_2, t
     """
     
     if hole_diameter_2 > hole_diameter_1:
-        raise WrongParameterError('hole number 2 has to be smaller than hole number 1')
+        raise exceptions.WrongParameterError('hole number 2 has to be smaller than hole number 1')
     gcode = list()
     gcode.append(full_hole(x_center, y_center, hole_diameter_1, tool_diameter, feed_rate, z_feed_rate, from_z_1, to_z_1,
                            step_z, safety_z))
@@ -381,9 +384,9 @@ def drill(x, y, depth, safety_height, feedrate):
     r"""Generate Gcode to drill at x,y"""
     gcode = list()
     # gcode.append('G98\n')
-    gcode.append(_g0_gcode(z=safety_height))
-    gcode.append(_g0_gcode(x=x, y=y))
-    gcode.append(_g81_gcode(z=depth, r=safety_height, feedrate=feedrate))
+    gcode.append(gcodes.g0_gcode(z=safety_height))
+    gcode.append(gcodes.g0_gcode(x=x, y=y))
+    gcode.append(gcodes.g81_gcode(z=depth, r=safety_height, feedrate=feedrate))
     return ''.join(gcode)
 
 
@@ -391,9 +394,9 @@ def drill_g73(x, y, depth, depth_increment, safety_height, feedrate):
     r"""Generate Gcode to drill at x,y with chip breaking"""
     gcode = list()
     # gcode.append('G98\n')
-    gcode.append(_g0_gcode(z=safety_height))
-    gcode.append(_g0_gcode(x=x, y=y))
-    gcode.append(_g73_gcode(z=depth, r=safety_height, q=depth_increment, feedrate=feedrate))
+    gcode.append(gcodes.g0_gcode(z=safety_height))
+    gcode.append(gcodes.g0_gcode(x=x, y=y))
+    gcode.append(gcodes.g73_gcode(z=depth, r=safety_height, q=depth_increment, feedrate=feedrate))
     return ''.join(gcode)
 
 
@@ -401,9 +404,9 @@ def drill_g83(x, y, depth, depth_increment, safety_height, feedrate):
     r"""Generate Gcode to peck drill at x,y"""
     gcode = list()
     # gcode.append('G98\n')
-    gcode.append(_g0_gcode(z=safety_height))
-    gcode.append(_g0_gcode(x=x, y=y))
-    gcode.append(_g83_gcode(z=depth, r=safety_height, q=depth_increment, feedrate=feedrate))
+    gcode.append(gcodes.g0_gcode(z=safety_height))
+    gcode.append(gcodes.g0_gcode(x=x, y=y))
+    gcode.append(gcodes.g83_gcode(z=depth, r=safety_height, q=depth_increment, feedrate=feedrate))
     return ''.join(gcode)
 
 
@@ -426,96 +429,6 @@ def end_gcode():
     return ''.join(end_code)
 
 
-# GCODE FORMATTING
-
-
-def _gcode_format(prefix, x=None, y=None, z=None, i=None, j=None, r=None, q=None, feedrate=None):
-    r"""Formats the Gcode line discarding undefined parameters"""
-    gcode = list()
-    gcode.append(prefix)
-    gcode.append(' ')
-    if x is not None:
-        gcode.append('X%(x)s ' % {'x': x})
-    if y is not None:
-        gcode.append('Y%(y)s ' % {'y': y})
-    if z is not None:
-        gcode.append('Z%(z)s ' % {'z': z})
-    if i is not None:
-        gcode.append('I%(i)s ' % {'i': i})
-    if j is not None:
-        gcode.append('J%(j)s ' % {'j': j})
-    if r is not None:
-        gcode.append('R%(r)s ' % {'r': r})
-    if q is not None:
-        gcode.append('Q%(q)s ' % {'q': q})
-    if feedrate is not None:
-        gcode.append('F%(f)s ' % {'f': feedrate})
-    gcode.append('\n')
-    return ''.join(gcode)
-
-
-def _g0_gcode(x=None, y=None, z=None):
-    r""" Max speed move Gcode"""
-    if x is None and y is None and z is None:
-        raise GcodeParameterError('G0 parameter error')
-    return _gcode_format(prefix='G0', x=x, y=y, z=z)
-
-
-def _g1_gcode(x=None, y=None, z=None, feedrate=None):
-    r""" Feed speed move Gcode"""
-    if x is None and y is None and z is None:
-        raise GcodeParameterError('G1 parameter error')
-    return _gcode_format(prefix='G1', x=x, y=y, z=z, feedrate=feedrate)
-
-
-def _g2_gcode(x_end_point=None, y_end_point=None, spiral_end_altitude=None, x_center_offset=None, y_center_offset=None,
-              feedrate=None):
-    r""" Clockwise arc"""
-    if x_center_offset is None and y_center_offset is None:
-        raise GcodeParameterError('G2 parameter error')
-    return _gcode_format(prefix='G2', x=x_end_point, y=y_end_point, z=spiral_end_altitude, i=x_center_offset,
-                         j=y_center_offset, feedrate=feedrate)
-
-
-def _g3_gcode(x_end_point=None, y_end_point=None, x_center_offset=None, y_center_offset=None, spiral_end_altitude=None,
-              feedrate=None):
-    r""" Counterclockwise arc"""
-    if x_center_offset is None and y_center_offset is None:
-        raise GcodeParameterError('G3 parameter error')
-    return _gcode_format(prefix='G3', x=x_end_point, y=y_end_point, i=x_center_offset, j=y_center_offset,
-                         z=spiral_end_altitude, feedrate=feedrate)
-
-
-def _g73_gcode(x=None, y=None, z=None, r=None, q=None, feedrate=None):
-    r""" Chip break drill"""
-    if z is None or r is None:
-        raise GcodeParameterError('G73 parameter error')
-    if r < z:
-        raise GcodeParameterError('G73 parameter error - r smaller than z')
-    return _gcode_format(prefix='G73 G98', x=x, y=y, z=z, r=r, q=q, feedrate=feedrate)
-
-
-def _g83_gcode(x=None, y=None, z=None, r=None, q=None, feedrate=None):
-    r""" Peck drill"""
-    if z is None or r is None:
-        raise GcodeParameterError('G83 parameter error')
-    if r < z:
-        raise GcodeParameterError('G83 parameter error - r smaller than z')
-    return _gcode_format(prefix='G83 G98', x=x, y=y, z=z, r=r, q=q, feedrate=feedrate)
-
-
-def _g81_gcode(x=None, y=None, z=None, r=None, feedrate=None):
-    r""" Normal drill"""
-    if z is None or r is None:
-        raise GcodeParameterError('G81 parameter error')
-    if r < z:
-        raise GcodeParameterError('G81 parameter error - r smaller than z')
-    return _gcode_format(prefix='G81 G98', x=x, y=y, z=z, r=r, feedrate=feedrate)
-
-
-# UTILITIES
-
-
 def _generate_heights(from_z=0.0, to_z=-1.0, step=-0.10):
     """Generator of Z heights, intended to be used in a for loop to mill down in steps.
 
@@ -530,13 +443,13 @@ def _generate_heights(from_z=0.0, to_z=-1.0, step=-0.10):
 
     """
     if to_z is None or from_z is None or step is None:
-        raise MissingParameterError('Missing parameter')
+        raise exceptions.MissingParameterError('Missing parameter')
 
     if from_z < to_z:
-        raise WrongParameterError('we are supposed to mill down - altitude problem')
+        raise exceptions.WrongParameterError('we are supposed to mill down - altitude problem')
     
     if step >= 0:
-        raise WrongParameterError('we are supposed to mill down - step problem')
+        raise exceptions.WrongParameterError('we are supposed to mill down - step problem')
 
     cur = float(from_z)
     
@@ -562,7 +475,7 @@ def _generate_excentric(start=0.0, end=1.0, tool_diameter=3.0):
 
     """
     if end < tool_diameter / 2.0:
-        raise WrongParameterError('cannot generate excentric dimensions')
+        raise exceptions.WrongParameterError('cannot generate excentric dimensions')
     
     value = float(start) + float(tool_diameter / 2.0)
     
@@ -571,10 +484,6 @@ def _generate_excentric(start=0.0, end=1.0, tool_diameter=3.0):
         value += tool_diameter / 2.0
         
     yield end - tool_diameter / 2.0
-
-
-def get_filepath(dir_='C:/', filename='gcode', extension='.ngc'):
-    return os.path.join(os.path.realpath(dir_), filename + extension)
 
 
 class Point:
@@ -607,18 +516,3 @@ class Point:
         point.y = displacement.y * math.cos(rads) - displacement.x * math.sin(rads)
         point = point + center
         return point
-
-
-# EXCEPTIONS
-
-
-class MissingParameterError(Exception):
-    pass
-
-
-class WrongParameterError(Exception):
-    pass
-
-
-class GcodeParameterError(Exception):
-    pass

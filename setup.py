@@ -1,7 +1,5 @@
 # coding: utf-8
 
-import io
-
 from setuptools import setup
 import pypandoc
 

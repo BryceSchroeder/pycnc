@@ -2,7 +2,7 @@
 
 r"""Gcode formatting"""
 
-import exceptions
+import pycnc.exceptions as exceptions
 
 
 def _gcode_format(prefix, x=None, y=None, z=None, i=None, j=None, r=None, q=None, feedrate=None):

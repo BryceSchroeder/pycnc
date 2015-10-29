@@ -4,8 +4,8 @@ from __future__ import division
 
 import math
 
-import gcodes
-import exceptions
+import pycnc.gcodes as gcodes
+import pycnc.exceptions as exceptions
 
 
 GCODE_EXTENSION = '.ngc'

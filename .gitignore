@@ -1,11 +1,12 @@
 # ignore PyCharm specific files
 /.idea
-
+/.tox
+/dist
 /build
 
 COMMANDS.md
 
-/dist
+
 
 
 #################

@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from setuptools import setup
+from setuptools import setup, find_packages
 import pypandoc
 
 import pycnc
@@ -16,19 +16,19 @@ files = []
 
 setup(
     name='pycnc',
-    version=pycnc.__version__,
+    version=pycnc.get_version(),
     url='http://github.com/floatingpointstack/pycnc/',
     license='GPL v2',
     author='Guillaume Florent',
     test_suite='nose.collector',
-    install_requires=[],
+    # install_requires=[],  # should be similar to requirements.txt but for setuptools and pypandoc
     author_email='florentsailing@gmail.com',
     description='2.5D CNC Python routines to generate GCode for simple geometries',
-    long_description=pypandoc.convert('README.md', 'rst'),
+    #long_description=pypandoc.convert('README.md', 'rst', format='md'),
     packages=['pycnc'],
     include_package_data=True,
+    zip_safe=False,
     platforms='any',
-    test_suite='pycnc.tests.test_pycnc',
     # classifiers list at : https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         'Programming Language :: Python',

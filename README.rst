@@ -1,1 +1,1 @@
-pycnc=====A set of 2.5D CNC Python routines to generate GCode for simplegeometries machining on a 3 axis mill or router.Available GCode generators--------------------------To be completed ...
+.. avoid level 1 headers as they conflict with the main title on PypiWhat is it ?------------A set of 2.5D CNC Python routines to generate GCode for simple geometries machining on a 3 axis mill or router.Available GCode generators--------------------------To be completed ...

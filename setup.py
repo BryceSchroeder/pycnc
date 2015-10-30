@@ -18,6 +18,7 @@ setup(
     name='pycnc',
     version=pycnc.get_version(),
     url='http://github.com/floatingpointstack/pycnc/',
+    download_url='https://github.com/floatingpointstack/pycnc/archive/1.0.zip',
     license='GPL v2',
     author='Guillaume Florent',
     test_suite='nose.collector',

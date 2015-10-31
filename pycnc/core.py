@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+r"""Gcode generation for simple shapes"""
+
 from __future__ import division
 
 import math
@@ -76,11 +78,11 @@ def rectangle(x_dimension, y_dimension, x_mini, y_mini, tool_diameter, feed_rate
 
     Parameters
     ----------
-    x_dimension : positive float
+    x_dimension : float
         The dimension of the rectangle along the x axis
-    y_dimension : positive float
+    y_dimension : float
         The dimension of the rectangle along the y axis
-    feed_rate : positive float
+    feed_rate : float
         Feed rate in mm/min
 
     Note
@@ -111,11 +113,11 @@ def rectangle_rounded_corners(x_center, y_center, x_dimension, y_dimension, corn
 
     Parameters
     ----------
-    x_dimension : positive float
+    x_dimension : float
         The dimension of the rectangle along the x axis
-    y_dimension : positive float
+    y_dimension : float
         The dimension of the rectangle along the y axis
-    feed_rate : positive float
+    feed_rate : float
         Feed rate in mm/min
 
     Note
@@ -199,7 +201,7 @@ def thin(x_dimension, y_dimension, x_mini, y_mini, tool_diameter, feed_rate, z_f
         # correction bug 25 SEP 2012 - parcours du perimètre exterieur sans prendre de matière
         # division par 2 de y_dimension dans l expression de la boucle while
         # while nb_turns/2*tool_diameter < x_dimension/2 or nb_turns/2*tool_diameter < y_dimension:
-        while nb_turns / 2 * tool_diameter < x_dimension/2 or nb_turns / 2* tool_diameter < y_dimension / 2:
+        while nb_turns / 2 * tool_diameter < x_dimension/2 or nb_turns / 2 * tool_diameter < y_dimension / 2:
             gcode.append(gcodes.g1_gcode(y=min(y_center + (nb_turns / 2 + 0.5) * tool_diameter,
                                                y_mini + y_dimension - tool_diameter / 2), feedrate=feed_rate))
             gcode.append(gcodes.g1_gcode(x=min(x_center + (nb_turns / 2 + 0.5) * tool_diameter,
@@ -435,12 +437,12 @@ def _generate_heights(from_z=0.0, to_z=-1.0, step=-0.10):
 
     Parameters
     ----------
-    from_z : float, default: 0.0
-        starting height
-    to_z : float, default: -1.0
-        end height (has to be below from_z)
-    step : negative float, default: -0.1
-        the step by which the milling head goes from from_z to to_z
+    from_z : float, optional
+        starting height, defaults to 0.0
+    to_z : float, optional
+        end height (has to be below from_z), defaults to 0.0
+    step : negative float, optional
+        the step by which the milling head goes from from_z to to_z, defaults to -0.1
 
     """
     if to_z is None or from_z is None or step is None:
@@ -467,12 +469,12 @@ def _generate_excentric(start=0.0, end=1.0, tool_diameter=3.0):
 
     Parameters
     ----------
-    start : float, default: 0.0
-        start position
-    end : float, default: 1.0
-        end position
-    tool_diameter : positive float, default: 3.0
-        tool diameter in mm
+    start : float, optional
+        start position, defaults to 0.0
+    end : float, optional
+        end position, defaults to 1.0
+    tool_diameter : float, optional
+        tool diameter in mm, defaults to 3.0
 
     """
     if end < tool_diameter / 2.0:
@@ -488,28 +490,100 @@ def _generate_excentric(start=0.0, end=1.0, tool_diameter=3.0):
 
 
 class Point:
-    r"""Simple class that stores 2D coordinates for a point"""
+    r"""Simple class that stores 2D coordinates for a point
+
+    Parameters
+    ----------
+    x : float
+        The X coordinate.
+    y : float
+        The Y coordinate.
+
+    Attributes
+    ----------
+    x : float
+        The X coordinate.
+    y : float
+        The Y coordinate.
+
+    """
     def __init__(self, x, y):
         self.x = x
         self.y = y
 
     def __add__(self, other):
-        r"""Addition operation definition"""
+        r"""Addition operation definition
+
+        Examples
+        --------
+        >>> p1 = Point(1,1)
+        >>> p2 = Point(1,2)
+        >>> p3 = p1 + p2
+        >>> p3.x
+        2
+        >>> p3.y
+        3
+
+        """
         return Point(self.x + other.x, self.y + other.y)
     
     def __sub__(self, other):
-        r"""Substraction operation definition"""
+        r"""Substraction operation definition
+
+        Examples
+        --------
+        >>> p1 = Point(5,4)
+        >>> p2 = Point(1,3)
+        >>> p3 = p1 - p2
+        >>> p3.x
+        4
+        >>> p3.y
+        1
+
+        """
         return Point(self.x - other.x, self.y - other.y)
         
     def offset(self, x, y):
         return Point(self.x + x, self.y + y)
         
     def rotate_around_origin(self, degs):
+        r"""Return a new point created by rotating self CCW  (counterclockwise) around the origin
+
+        Examples
+        --------
+        >>> p1 = Point(1, 0.0)
+        >>> p2 = p1.rotate_around_origin(90)
+        >>> p1.x
+        1
+        >>> p1.y
+        0.0
+        >>> -1e-15 < p2.x < 1e-15
+        True
+        >>> p2.y
+        1.0
+
+        """
         rads = math.radians(degs)
         return Point(self.x * math.cos(rads) - self.y * math.sin(rads),
                      self.x * math.sin(rads) + self.y * math.cos(rads))
     
     def rotate(self, center, degs):
+        r"""Return a new point created by rotating self CW (clockwise)around center
+
+        Examples
+        --------
+        >>> p1 = Point(1,1.0)
+        >>> p2 = p1.rotate(Point(0, 1), 90)
+        >>> p1.x
+        1
+        >>> p1.y
+        1.0
+        >>> -1e-15 < p2.x < 1e-15
+        True
+        >>> p2.y
+        0.0
+
+        """
         rads = math.radians(degs)
         displacement = self - center
         point = Point(0, 0)
